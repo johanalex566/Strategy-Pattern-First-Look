@@ -23,3 +23,5 @@ Notes:
 --The context should not know about the concrete implementation of a stategy as it will only be using the strategy interface.
 
 --The strategy pattern is a behavioural design pattern and the idea is that you choose suitable strategy based on user input.
+
+From pluralsight.
