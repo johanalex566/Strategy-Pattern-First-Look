@@ -24,4 +24,5 @@ Notes:
 
 --The strategy pattern is a behavioural design pattern and the idea is that you choose suitable strategy based on user input.
 
-From pluralsight.
+From pluralsight design patterns C#.
+With the help of Filip Ekberg
