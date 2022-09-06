@@ -1,0 +1,4 @@
+﻿---------------------------------------------------
+The main goals for introducing the strategy pattern
+is to make the code more extensible and testable.
+---------------------------------------------------
