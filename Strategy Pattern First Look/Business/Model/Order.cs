@@ -1,4 +1,5 @@
-﻿using Strategy_Pattern_First_Look.Business.Strategies.SalesTax;
+﻿using Strategy_Pattern_First_Look.Business.Strategies.Invoice;
+using Strategy_Pattern_First_Look.Business.Strategies.SalesTax;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,9 +8,22 @@ namespace Strategy_Pattern_First_Look.Business.Model
     public class Order
     {
         public Dictionary<Item, int> LineItems { get; } = new Dictionary<Item, int>();
-        public ShippingDetails ShippingDetails { get; set; }
+
+        public IList<Payment> SelectedPayments { get; } = new List<Payment>();
+
+        public IList<Payment> FinalizedPayments { get; } = new List<Payment>();
+
+        public ShippingStatus ShippingStatus { get; set; } = ShippingStatus.WaitingForPayment;
+
+        public decimal AmountDue => TotalPrice - FinalizedPayments.Sum(payment => payment.Amount);
+
         public decimal TotalPrice => LineItems.Sum(item => item.Key.Price * item.Value);
+
+        public ShippingDetails ShippingDetails { get; set; }
+
         public ISalesTaxStrategy SalesTaxStrategy { get; set; }
+
+        public IInvoiceStrategy InvoiceStrategy { get; set; }
 
         public decimal GetTax()
         {
@@ -19,6 +33,24 @@ namespace Strategy_Pattern_First_Look.Business.Model
                 return 0m;
             }
             return SalesTaxStrategy.GetTaxFlor(this);
+        }
+
+        public void FinalizeOrder()
+        {
+            if (SelectedPayments.Any(x => x.PaymentProvider == PaymentProvider.Invoice) &&
+                AmountDue > 0 &&
+                ShippingStatus == ShippingStatus.WaitingForPayment)
+            {
+                InvoiceStrategy.Generate(this);
+
+                ShippingStatus = ShippingStatus.ReadyForShippment;
+
+            }
+
+            else if (AmountDue > 0)
+            {
+                throw new System.Exception("Unable to finalize order.");
+            }
         }
 
     }
@@ -35,6 +67,12 @@ namespace Strategy_Pattern_First_Look.Business.Model
         public string OriginState { get; set; }
     }
 
+    public class Payment
+    {
+        public decimal Amount { get; set; }
+        public PaymentProvider PaymentProvider { get; set; }
+    }
+
     public class Item
     {
         public string Id { get; }
@@ -42,19 +80,6 @@ namespace Strategy_Pattern_First_Look.Business.Model
         public decimal Price { get; }
 
         public ItemType ItemType { get; set; }
-
-        public decimal GetTax()
-        {
-            switch (ItemType)
-            {
-                case ItemType.Service:
-                case ItemType.Food:
-                case ItemType.Hardware:
-                case ItemType.Literature:
-                default:
-                    return 0m;
-            }
-        }
 
         public Item(string id, string name, decimal price, ItemType type)
         {
@@ -71,5 +96,19 @@ namespace Strategy_Pattern_First_Look.Business.Model
         Food,
         Hardware,
         Literature
+    }
+
+    public enum ShippingStatus
+    {
+        WaitingForPayment,
+        ReadyForShippment,
+        Shipped
+    }
+
+    public enum PaymentProvider
+    {
+        Paypal,
+        CreditCard,
+        Invoice
     }
 }
