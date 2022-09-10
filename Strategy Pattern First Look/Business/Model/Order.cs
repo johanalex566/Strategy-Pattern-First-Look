@@ -1,5 +1,6 @@
 ﻿using Strategy_Pattern_First_Look.Business.Strategies.Invoice;
 using Strategy_Pattern_First_Look.Business.Strategies.SalesTax;
+using Strategy_Pattern_First_Look.Business.Strategies.Shipping;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -24,6 +25,8 @@ namespace Strategy_Pattern_First_Look.Business.Model
         public ISalesTaxStrategy SalesTaxStrategy { get; set; }
 
         public IInvoiceStrategy InvoiceStrategy { get; set; }
+
+        public IShippingStrategy ShippingStrategy { get; set; }
 
         public decimal GetTax()
         {
@@ -51,6 +54,8 @@ namespace Strategy_Pattern_First_Look.Business.Model
             {
                 throw new System.Exception("Unable to finalize order.");
             }
+
+            ShippingStrategy.Ship(this);
         }
 
     }
